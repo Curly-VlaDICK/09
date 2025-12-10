@@ -51,13 +51,19 @@
             padding: 0 10px;
         }
         
-        /* Инструкции с аккордеоном для мобильных */
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-bottom: 5px;
+        }
+        
+        /* Инструкции */
         .instructions-container {
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             margin-bottom: 15px;
+            padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            overflow: hidden;
             width: 100%;
         }
         
@@ -65,49 +71,36 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            background-color: #4a6bff;
-            color: white;
+            color: #4a6bff;
             font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .instructions-header i {
-            transition: transform 0.3s;
-        }
-        
-        .instructions-header.active i {
-            transform: rotate(180deg);
+            margin-bottom: 10px;
         }
         
         .instructions {
-            padding: 0 15px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out, padding 0.3s;
-        }
-        
-        .instructions.active {
-            padding: 15px;
-            max-height: 1000px;
+            color: #555;
+            font-size: clamp(0.9rem, 3vw, 1rem);
+            line-height: 1.5;
         }
         
         .instructions p {
             margin-bottom: 10px;
-            line-height: 1.5;
-            color: #555;
-            font-size: clamp(0.9rem, 3vw, 1rem);
         }
         
-        .instructions ul {
-            padding-left: 20px;
+        .double-tap-hint {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f5ff;
+            padding: 10px;
+            border-radius: 10px;
             margin-top: 10px;
+            font-weight: 600;
+            color: #4a6bff;
         }
         
-        .instructions li {
-            margin-bottom: 8px;
-            line-height: 1.4;
-            font-size: clamp(0.85rem, 3vw, 0.95rem);
+        .double-tap-hint i {
+            margin-right: 10px;
+            font-size: 1.5rem;
         }
         
         /* Игровая информация */
@@ -286,11 +279,10 @@
             border-color: #4a6bff;
         }
         
-        .item.dragging {
-            opacity: 0.7;
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            z-index: 10;
+        .item.selected {
+            border-color: #4a6bff;
+            background-color: rgba(74, 107, 255, 0.1);
+            transform: scale(0.98);
         }
         
         .item.matched {
@@ -374,18 +366,6 @@
             font-weight: bold;
             font-size: 0.9rem;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .drop-zone {
-            border-color: #3498db !important;
-            background-color: rgba(52, 152, 219, 0.1) !important;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { border-color: #3498db; }
-            50% { border-color: #2ecc71; }
-            100% { border-color: #3498db; }
         }
         
         /* Панель управления */
@@ -565,22 +545,27 @@
             background-color: #e74c3c;
         }
         
-        /* Индикатор перетаскивания для мобильных */
-        .drag-hint {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.8);
+        .toast-info {
+            background-color: #3498db;
+        }
+        
+        /* Индикатор двойного нажатия */
+        .double-tap-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: #4a6bff;
             color: white;
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            z-index: 999;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            gap: 8px;
-            display: none;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2;
         }
         
         /* Адаптация для очень маленьких экранов */
@@ -646,10 +631,38 @@
             100% { transform: scale(1); }
         }
         
+        /* Анимация выбора */
+        .select-animation {
+            animation: select 0.3s ease;
+        }
+        
+        @keyframes select {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
         /* Улучшенная обработка длинных слов */
         .long-word {
             font-size: clamp(0.75rem, 2.5vw, 0.95rem) !important;
             line-height: 1.2;
+        }
+        
+        /* Индикатор нажатия для мобильных */
+        .tap-indicator {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(74, 107, 255, 0.5);
+            pointer-events: none;
+            z-index: 5;
+            animation: tapEffect 0.5s ease-out;
+        }
+        
+        @keyframes tapEffect {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
     </style>
 </head>
@@ -658,33 +671,20 @@
         <!-- Заголовок -->
         <div class="header">
             <h1><i class="fas fa-gamepad"></i> Соотнеси картинки со словами</h1>
+            <p class="subtitle">Нажмите дважды на карточку, чтобы выбрать</p>
         </div>
         
-        <!-- Инструкции с аккордеоном -->
+        <!-- Инструкции -->
         <div class="instructions-container">
-            <div class="instructions-header" id="instructionsToggle">
+            <div class="instructions-header">
                 <span><i class="fas fa-info-circle"></i> Как играть</span>
-                <i class="fas fa-chevron-down"></i>
             </div>
-            <div class="instructions" id="instructions">
-                <p>Перетащите слова на соответствующие картинки или картинки на слова. Когда все пары будут сопоставлены, игра завершится.</p>
-                <p><strong>Слова для сопоставления:</strong></p>
-                <ul>
-                    <li><strong>Стул</strong> - предмет мебели для сидения</li>
-                    <li><strong>Стол</strong> - предмет мебели с горизонтальной поверхностью</li>
-                    <li><strong>Люстра</strong> - подвесной светильник</li>
-                    <li><strong>Диван</strong> - мягкая мебель для сидения нескольких человек</li>
-                    <li><strong>Ванна</strong> - сантехническое оборудование для купания</li>
-                    <li><strong>Душ</strong> - сантехническое оборудование для мытья стоя</li>
-                    <li><strong>Зеркало</strong> - гладкая поверхность, отражающая свет</li>
-                    <li><strong>Кровать</strong> - предмет мебели для сна</li>
-                    <li><strong>Шкаф</strong> - предмет мебели для хранения вещей</li>
-                    <li><strong>Кухня</strong> - помещение для приготовления пищи</li>
-                    <li><strong>Плита</strong> - устройство для приготовления пищи</li>
-                    <li><strong>Туалет</strong> - санитарно-техническое оборудование</li>
-                    <li><strong>Холодильник</strong> - устройство для хранения продуктов при низкой температуре</li>
-                </ul>
-                <p><strong>Управление:</strong> На компьютере - перетаскивайте мышью. На телефоне - касайтесь и удерживайте для перетаскивания.</p>
+            <div class="instructions">
+                <p>Нажмите <strong>дважды</strong> на картинку и соответствующее слово, чтобы сопоставить их. Цель - найти все пары как можно быстрее!</p>
+                <div class="double-tap-hint">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <span>Дважды нажмите на элемент для выбора</span>
+                </div>
             </div>
         </div>
         
@@ -751,12 +751,6 @@
         </div>
     </div>
     
-    <!-- Индикатор перетаскивания для мобильных -->
-    <div class="drag-hint" id="dragHint">
-        <i class="fas fa-hand-point-up"></i>
-        <span>Удерживайте и перетаскивайте</span>
-    </div>
-    
     <!-- Модальное окно завершения игры -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
@@ -814,12 +808,12 @@
         let matches = 0;
         let time = 0;
         let timerInterval;
-        let draggedElement = null;
         let hintsLeft = 3;
         let matchedPairs = [];
+        let selectedItems = [];
+        let lastTapTime = 0;
+        let lastTappedElement = null;
         let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        let touchStartX = 0;
-        let touchStartY = 0;
 
         // DOM элементы
         const imagesContainer = document.getElementById('imagesContainer');
@@ -842,9 +836,6 @@
         const finalMatches = document.getElementById('finalMatches');
         const playAgainBtn = document.getElementById('playAgainBtn');
         const toast = document.getElementById('toast');
-        const instructionsToggle = document.getElementById('instructionsToggle');
-        const instructions = document.getElementById('instructions');
-        const dragHint = document.getElementById('dragHint');
 
         // Инициализация игры
         function initGame() {
@@ -853,6 +844,7 @@
             time = 0;
             hintsLeft = 3;
             matchedPairs = [];
+            selectedItems = [];
             
             clearInterval(timerInterval);
             startTimer();
@@ -873,16 +865,21 @@
             shuffledItems.forEach(item => {
                 const imageItem = document.createElement('div');
                 imageItem.className = 'item image-item';
-                imageItem.draggable = true;
                 imageItem.dataset.id = item.id;
                 imageItem.dataset.type = 'image';
                 imageItem.dataset.name = item.name;
+                
+                // Добавляем индикатор двойного нажатия
+                const tapIndicator = document.createElement('div');
+                tapIndicator.className = 'double-tap-indicator';
+                tapIndicator.innerHTML = '<i class="fas fa-hand-point-up"></i>';
+                imageItem.appendChild(tapIndicator);
                 
                 // Создание элемента изображения
                 const image = document.createElement('img');
                 image.src = item.image;
                 image.alt = item.name;
-                image.loading = "lazy"; // Ленивая загрузка для производительности
+                image.loading = "lazy";
                 image.onerror = function() {
                     // Если изображение не загружается, показываем эмодзи-заглушку
                     this.style.display = 'none';
@@ -899,8 +896,8 @@
                 imageItem.appendChild(image);
                 imageItem.appendChild(itemName);
                 
-                // Добавление обработчиков событий
-                addItemEvents(imageItem);
+                // Добавление обработчиков событий для двойного нажатия
+                addDoubleTapEvents(imageItem);
                 
                 imagesContainer.appendChild(imageItem);
             });
@@ -909,10 +906,15 @@
             shuffledWords.forEach(item => {
                 const wordItem = document.createElement('div');
                 wordItem.className = 'item word-item';
-                wordItem.draggable = true;
                 wordItem.dataset.id = item.id;
                 wordItem.dataset.type = 'word';
                 wordItem.dataset.name = item.name;
+                
+                // Добавляем индикатор двойного нажатия
+                const tapIndicator = document.createElement('div');
+                tapIndicator.className = 'double-tap-indicator';
+                tapIndicator.innerHTML = '<i class="fas fa-hand-point-up"></i>';
+                wordItem.appendChild(tapIndicator);
                 
                 const itemName = document.createElement('div');
                 itemName.className = 'item-name';
@@ -925,8 +927,8 @@
                 
                 wordItem.appendChild(itemName);
                 
-                // Добавление обработчиков событий
-                addItemEvents(wordItem);
+                // Добавление обработчиков событий для двойного нажатия
+                addDoubleTapEvents(wordItem);
                 
                 wordsContainer.appendChild(wordItem);
             });
@@ -936,246 +938,170 @@
             
             // Обновить прогресс
             updateProgress();
-            
-            // Показать подсказку о перетаскивании для мобильных устройств
-            if (isMobile) {
-                setTimeout(() => {
-                    showDragHint();
-                }, 1000);
-            }
         }
 
-        // Показать подсказку о перетаскивании
-        function showDragHint() {
-            if (localStorage.getItem('dragHintShown')) return;
+        // Добавление обработчиков событий для двойного нажатия
+        function addDoubleTapEvents(element) {
+            // Для десктопов: двойной клик
+            element.addEventListener('dblclick', handleDoubleTap);
             
-            dragHint.style.display = 'flex';
-            setTimeout(() => {
-                dragHint.style.display = 'none';
-                localStorage.setItem('dragHintShown', 'true');
-            }, 4000);
-        }
-
-        // Добавление обработчиков событий для элементов
-        function addItemEvents(element) {
-            // События для десктопов
-            element.addEventListener('dragstart', handleDragStart);
-            element.addEventListener('dragover', handleDragOver);
-            element.addEventListener('dragenter', handleDragEnter);
-            element.addEventListener('dragleave', handleDragLeave);
-            element.addEventListener('drop', handleDrop);
-            element.addEventListener('dragend', handleDragEnd);
-            
-            // События для мобильных устройств
+            // Для мобильных устройств: обработка двойного касания
             element.addEventListener('touchstart', handleTouchStart, { passive: true });
-            element.addEventListener('touchmove', handleTouchMove, { passive: false });
-            element.addEventListener('touchend', handleTouchEnd);
-            element.addEventListener('touchcancel', handleTouchEnd);
+            element.addEventListener('touchend', handleTouchEnd, { passive: true });
             
-            // Клик для мобильных (как альтернатива перетаскиванию)
-            element.addEventListener('click', handleClick);
+            // Также добавим одинарный клик для десктопов как альтернативу
+            // (некоторые пользователи могут не знать о двойном клике)
+            element.addEventListener('click', handleSingleClick);
         }
 
-        // Обработчики событий для десктопов
-        function handleDragStart(e) {
-            if (this.classList.contains('matched')) {
-                e.preventDefault();
-                return;
-            }
-            
-            draggedElement = this;
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', this.dataset.id);
-            e.dataTransfer.effectAllowed = 'move';
-        }
-
-        function handleDragOver(e) {
+        // Обработчик двойного клика (для десктопов)
+        function handleDoubleTap(e) {
             e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
+            selectItem(this);
         }
 
-        function handleDragEnter(e) {
-            if (this !== draggedElement && !this.classList.contains('matched')) {
-                this.classList.add('drop-zone');
+        // Обработчик одинарного клика (альтернатива для десктопов)
+        function handleSingleClick(e) {
+            // Только для десктопов и если не было двойного клика
+            if (!isMobile) {
+                // Проверяем, был ли двойной клик (обрабатывается отдельно)
+                // Для одинарного клика просто выделяем элемент
+                selectItem(this);
             }
         }
 
-        function handleDragLeave(e) {
-            if (!this.contains(e.relatedTarget)) {
-                this.classList.remove('drop-zone');
-            }
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drop-zone');
-            
-            if (this === draggedElement || this.classList.contains('matched')) {
-                return;
-            }
-            
-            // Проверка, что перетаскиваемый элемент и целевой элемент разного типа
-            const draggedType = draggedElement.dataset.type;
-            const targetType = this.dataset.type;
-            
-            if (draggedType === targetType) {
-                showToast("Нельзя сопоставлять картинку с картинкой или слово со словом!", "error");
-                return;
-            }
-            
-            // Проверка совпадения
-            const draggedId = draggedElement.dataset.id;
-            const targetId = this.dataset.id;
-            
-            if (draggedId === targetId) {
-                // Правильное сопоставление
-                handleMatch(draggedElement, this);
-            } else {
-                // Неправильное сопоставление
-                handleMismatch(draggedElement, this);
-            }
-        }
-
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            document.querySelectorAll('.drop-zone').forEach(el => {
-                el.classList.remove('drop-zone');
-            });
-        }
-
-        // Обработчики событий для мобильных устройств
+        // Обработчики для мобильных устройств (двойное касание)
         function handleTouchStart(e) {
-            if (this.classList.contains('matched')) {
-                return;
-            }
+            const currentTime = new Date().getTime();
+            const timeDiff = currentTime - lastTapTime;
             
-            draggedElement = this;
-            const touch = e.touches[0];
-            touchStartX = touch.clientX;
-            touchStartY = touch.clientY;
-            
-            // Добавляем класс для визуальной обратной связи
-            this.classList.add('dragging');
-        }
-
-        function handleTouchMove(e) {
-            if (!draggedElement || draggedElement.classList.contains('matched')) {
-                return;
-            }
-            
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - touchStartX;
-            const deltaY = touch.clientY - touchStartY;
-            
-            // Определяем элемент под пальцем
-            const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (elementUnderTouch && elementUnderTouch.classList.contains('item') && 
-                !elementUnderTouch.classList.contains('matched') && 
-                elementUnderTouch !== draggedElement) {
-                
-                // Подсвечиваем элемент как зону сброса
-                document.querySelectorAll('.drop-zone').forEach(el => {
-                    if (el !== elementUnderTouch) el.classList.remove('drop-zone');
-                });
-                elementUnderTouch.classList.add('drop-zone');
+            // Если это двойное касание на том же элементе
+            if (lastTappedElement === this && timeDiff < 500) {
+                e.preventDefault();
+                selectItem(this);
+                lastTapTime = 0;
+                lastTappedElement = null;
             } else {
-                // Убираем подсветку, если не над элементом
-                document.querySelectorAll('.drop-zone').forEach(el => {
-                    el.classList.remove('drop-zone');
-                });
+                lastTappedElement = this;
+                lastTapTime = currentTime;
             }
+            
+            // Создаем визуальный эффект касания
+            createTapEffect(e.touches[0].clientX, e.touches[0].clientY);
         }
 
         function handleTouchEnd(e) {
-            if (!draggedElement) return;
-            
-            const touch = e.changedTouches[0];
-            const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
-            
-            // Убираем класс dragging
-            draggedElement.classList.remove('dragging');
-            document.querySelectorAll('.drop-zone').forEach(el => {
-                el.classList.remove('drop-zone');
-            });
-            
-            // Проверяем, был ли сброс на другой элемент
-            if (elementUnderTouch && elementUnderTouch.classList.contains('item') && 
-                !elementUnderTouch.classList.contains('matched') && 
-                elementUnderTouch !== draggedElement) {
-                
-                // Проверка, что перетаскиваемый элемент и целевой элемент разного типа
-                const draggedType = draggedElement.dataset.type;
-                const targetType = elementUnderTouch.dataset.type;
-                
-                if (draggedType === targetType) {
-                    showToast("Нельзя сопоставлять картинку с картинкой или слово со словом!", "error");
-                    return;
+            // Небольшая задержка для предотвращения ложных срабатываний
+            setTimeout(() => {
+                if (lastTappedElement === this && new Date().getTime() - lastTapTime > 1000) {
+                    lastTappedElement = null;
                 }
-                
-                // Проверка совпадения
-                const draggedId = draggedElement.dataset.id;
-                const targetId = elementUnderTouch.dataset.id;
-                
-                if (draggedId === targetId) {
-                    // Правильное сопоставление
-                    handleMatch(draggedElement, elementUnderTouch);
-                } else {
-                    // Неправильное сопоставление
-                    handleMismatch(draggedElement, elementUnderTouch);
-                }
-            }
-            
-            draggedElement = null;
+            }, 1000);
         }
 
-        // Обработчик клика для мобильных (альтернативный способ)
-        function handleClick(e) {
-            if (!isMobile || e.target.tagName === 'BUTTON') return;
+        // Создание визуального эффекта касания
+        function createTapEffect(x, y) {
+            if (!isMobile) return;
             
-            // Если есть выбранный элемент, пытаемся сопоставить
-            if (window.selectedItem && window.selectedItem !== this && 
-                !this.classList.contains('matched') && !window.selectedItem.classList.contains('matched')) {
+            const tapIndicator = document.createElement('div');
+            tapIndicator.className = 'tap-indicator';
+            tapIndicator.style.left = (x - 25) + 'px';
+            tapIndicator.style.top = (y - 25) + 'px';
+            
+            document.body.appendChild(tapIndicator);
+            
+            // Удаляем индикатор после анимации
+            setTimeout(() => {
+                tapIndicator.remove();
+            }, 500);
+        }
+
+        // Выбор элемента
+        function selectItem(element) {
+            // Если элемент уже сопоставлен, игнорируем
+            if (element.classList.contains('matched')) {
+                return;
+            }
+            
+            // Если элемент уже выбран, снимаем выделение
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                element.classList.remove('select-animation');
                 
-                // Проверка, что элементы разного типа
-                const selectedType = window.selectedItem.dataset.type;
-                const currentType = this.dataset.type;
-                
-                if (selectedType === currentType) {
-                    showToast("Нельзя сопоставлять картинку с картинкой или слово со словом!", "error");
-                    window.selectedItem.classList.remove('selected');
-                    window.selectedItem = null;
-                    return;
+                // Удаляем из выбранных
+                const index = selectedItems.indexOf(element);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
                 }
                 
-                // Проверка совпадения
-                const selectedId = window.selectedItem.dataset.id;
-                const currentId = this.dataset.id;
+                return;
+            }
+            
+            // Если уже выбрано 2 элемента, очищаем выбор
+            if (selectedItems.length >= 2) {
+                selectedItems.forEach(item => {
+                    item.classList.remove('selected');
+                    item.classList.remove('select-animation');
+                });
+                selectedItems = [];
+            }
+            
+            // Добавляем элемент в выбранные
+            element.classList.add('selected');
+            element.classList.add('select-animation');
+            selectedItems.push(element);
+            
+            // Если выбрано 2 элемента, проверяем их
+            if (selectedItems.length === 2) {
+                checkSelectedItems();
+            } else {
+                // Показываем подсказку для выбора второго элемента
+                showToast("Теперь дважды нажмите на второй элемент", "info");
+            }
+        }
+
+        // Проверка выбранных элементов
+        function checkSelectedItems() {
+            if (selectedItems.length !== 2) return;
+            
+            const [first, second] = selectedItems;
+            
+            // Проверяем, что выбраны элементы разного типа
+            const firstType = first.dataset.type;
+            const secondType = second.dataset.type;
+            
+            if (firstType === secondType) {
+                showToast("Нельзя сопоставлять картинку с картинкой или слово со словом!", "error");
                 
-                if (selectedId === currentId) {
-                    // Правильное сопоставление
-                    handleMatch(window.selectedItem, this);
-                } else {
-                    // Неправильное сопоставление
-                    handleMismatch(window.selectedItem, this);
-                }
+                // Сбрасываем выделение через некоторое время
+                setTimeout(() => {
+                    first.classList.remove('selected');
+                    second.classList.remove('selected');
+                    selectedItems = [];
+                }, 1500);
                 
-                window.selectedItem.classList.remove('selected');
-                window.selectedItem = null;
-            } else if (!this.classList.contains('matched')) {
-                // Выбираем элемент
-                if (window.selectedItem) {
-                    window.selectedItem.classList.remove('selected');
-                }
-                this.classList.add('selected');
-                window.selectedItem = this;
-                showToast("Теперь выберите второй элемент для сопоставления", "success");
+                return;
+            }
+            
+            // Проверяем, совпадают ли элементы
+            const firstId = first.dataset.id;
+            const secondId = second.dataset.id;
+            
+            if (firstId === secondId) {
+                // Правильное сопоставление
+                handleMatch(first, second);
+            } else {
+                // Неправильное сопоставление
+                handleMismatch(first, second);
             }
         }
 
         // Обработка правильного сопоставления
         function handleMatch(element1, element2) {
+            // Убираем выделение
+            element1.classList.remove('selected');
+            element2.classList.remove('selected');
+            
             // Пометить элементы как сопоставленные
             element1.classList.add('matched');
             element2.classList.add('matched');
@@ -1203,6 +1129,10 @@
                 element2.querySelector('.item-name').classList.add('success-animation');
             }
             
+            // Удаляем индикаторы двойного нажатия
+            element1.querySelector('.double-tap-indicator')?.remove();
+            element2.querySelector('.double-tap-indicator')?.remove();
+            
             // Добавить пару в список сопоставленных
             const pairId = element1.dataset.id;
             if (!matchedPairs.includes(pairId)) {
@@ -1229,6 +1159,12 @@
                 
                 // Звуковой эффект (если поддерживается)
                 playSuccessSound();
+                
+                // Показать сообщение об успехе
+                showToast("Правильно! Вы нашли пару!", "success");
+                
+                // Очищаем выбранные элементы
+                selectedItems = [];
                 
                 // Проверить, завершена ли игра
                 if (matches === gameItems.length) {
@@ -1270,10 +1206,6 @@
             // Анимация ошибки
             element1.classList.add('success-animation');
             element2.classList.add('success-animation');
-            setTimeout(() => {
-                element1.classList.remove('success-animation');
-                element2.classList.remove('success-animation');
-            }, 500);
             
             // Штраф за ошибку
             score = Math.max(0, score - 20);
@@ -1282,10 +1214,17 @@
             // Показать сообщение об ошибке
             showToast("Неправильное сопоставление! Попробуйте еще раз.", "error");
             
-            // Сбросить цвет через некоторое время
+            // Сбросить выделение и цвет через некоторое время
             setTimeout(() => {
+                element1.classList.remove('selected');
+                element2.classList.remove('selected');
+                element1.classList.remove('success-animation');
+                element2.classList.remove('success-animation');
                 element1.style.borderColor = '';
                 element2.style.borderColor = '';
+                
+                // Очищаем выбранные элементы
+                selectedItems = [];
             }, 1500);
         }
 
@@ -1415,12 +1354,6 @@
             initGame();
         });
 
-        // Переключение инструкций
-        instructionsToggle.addEventListener('click', () => {
-            instructions.classList.toggle('active');
-            instructionsToggle.classList.toggle('active');
-        });
-
         // Завершение игры
         function endGame(isWin) {
             clearInterval(timerInterval);
@@ -1467,7 +1400,13 @@
         // Обработка изменения ориентации экрана
         window.addEventListener('orientationchange', () => {
             // Небольшая задержка для применения стилей после изменения ориентации
-            setTimeout(initGame, 100);
+            setTimeout(() => {
+                // Сбрасываем выделение при изменении ориентации
+                selectedItems.forEach(item => {
+                    item.classList.remove('selected');
+                });
+                selectedItems = [];
+            }, 100);
         });
         
         // Добавление возможности использовать клавиатуру
@@ -1489,30 +1428,16 @@
             if (e.key === 'Escape' && modalOverlay.style.display === 'flex') {
                 modalOverlay.style.display = 'none';
             }
+            
+            // Быстрая клавиша для очистки выделения
+            if (e.key === 'Escape' && selectedItems.length > 0) {
+                selectedItems.forEach(item => {
+                    item.classList.remove('selected');
+                });
+                selectedItems = [];
+                showToast("Выделение сброшено", "info");
+            }
         });
-        
-        // Обработка свайпов для мобильных устройств (дополнительная функциональность)
-        let touchStartXGlobal = 0;
-        document.addEventListener('touchstart', (e) => {
-            touchStartXGlobal = e.touches[0].clientX;
-        }, { passive: true });
-        
-        document.addEventListener('touchend', (e) => {
-            const touchEndX = e.changedTouches[0].clientX;
-            const diff = touchEndX - touchStartXGlobal;
-            
-            // Свайп вправо для открытия инструкций
-            if (diff > 100 && Math.abs(diff) > 50) {
-                instructions.classList.add('active');
-                instructionsToggle.classList.add('active');
-            }
-            
-            // Свайп влево для закрытия инструкций
-            if (diff < -100 && Math.abs(diff) > 50) {
-                instructions.classList.remove('active');
-                instructionsToggle.classList.remove('active');
-            }
-        }, { passive: true });
     </script>
 </body>
 </html>
